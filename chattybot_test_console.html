@@ -489,12 +489,20 @@ FINDINGS.forEach(function(f,i){
     "<div class='owasp'>"+f.owasp+"</div>"+
     "<div class='desc'>"+esc(f.desc)+"</div>"+
     "<div class='cbody'>"+f.body(k)+"</div>";
+  card.dataset.k = k;
   grid.appendChild(card);
   if(f.run){
-    window["run_"+k]=function(){ f.run(k); };
-    var btn=card.querySelector("button[data-fn]");
-    if(btn){ btn.addEventListener("click",function(){ f.run(k); });
-      var marker=document.createElement("span"); marker.hidden=true; marker.dataset.rerun="run_"+k; card.appendChild(marker); }
+    window["run_"+k]=function(){ try{ f.run(k); }catch(e){ var o=document.getElementById(k+"_out"); if(o) o.innerHTML="<div class='why'>Error: "+esc(e.message)+"</div>"; } };
+    var marker=document.createElement("span"); marker.hidden=true; marker.dataset.rerun="run_"+k; card.appendChild(marker);
   }
+});
+
+// Event delegation: one listener handles every card's Run button, regardless of load timing.
+grid.addEventListener("click", function(e){
+  var btn = e.target.closest ? e.target.closest("button[data-fn]") : null;
+  if(!btn) return;
+  var card = btn.closest(".card");
+  var k = card && card.dataset.k;
+  if(k && typeof window["run_"+k]==="function"){ e.preventDefault(); window["run_"+k](); }
 });
 </script>
