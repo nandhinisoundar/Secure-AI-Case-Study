@@ -80,6 +80,23 @@
   iframe.render{width:100%;border:1px solid var(--line);border-radius:7px;background:#fff;min-height:40px;margin-top:8px}
   .foot{margin-top:22px;font-size:11.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
   a{color:var(--accent)}
+  .intro{display:flex;flex-direction:column;gap:14px;margin:16px 0 4px}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;min-width:0}
+  .panel h2{font-size:15px;margin:0 0 8px;letter-spacing:.01em}
+  .panel p{font-size:13px;color:var(--muted);margin:0;line-height:1.55}
+  .panel p code,.panel p b{color:var(--fg)}
+  .panel code{font-family:var(--mono);background:var(--code);color:var(--codeink);padding:1px 5px;border-radius:4px;font-size:12px}
+  .flowbox{overflow-x:auto}
+  .flowsvg{width:100%;min-width:720px;height:auto;display:block;font-family:var(--mono)}
+  details.vlist{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 16px}
+  details.vlist summary{cursor:pointer;font-size:14px;font-weight:700;padding:11px 0;color:var(--fg)}
+  .colwrap{display:grid;grid-template-columns:1fr 1fr;gap:0 28px;padding-bottom:10px}
+  @media (max-width:640px){.colwrap{grid-template-columns:1fr}}
+  .vtable{width:100%;border-collapse:collapse;font-size:12.5px}
+  .vtable td{padding:6px 6px;border-top:1px solid var(--line);vertical-align:top;color:var(--fg)}
+  .vtable td.vid{font-family:var(--mono);font-weight:700;color:var(--accent);white-space:nowrap}
+  .vtable td.vsv{white-space:nowrap;font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em}
+  .vsv.crit{color:var(--crit)} .vsv.high{color:var(--warn)} .vsv.med{color:var(--accent)} .vsv.low{color:var(--muted)} .vsv.info{color:var(--muted)}
   @media (max-width:520px){ .toolbar{flex-direction:column;align-items:flex-start} }
 </style>
 
@@ -90,6 +107,80 @@
     <h1>ChattyBot Security Test Console</h1>
     <p>Exercise each finding's logic (vulnerable vs fixed). Infrastructure findings show detection evidence instead of a control.</p>
   </header>
+
+  <div class="intro">
+    <div class="panel">
+      <h2>What this is &amp; where the logic comes from</h2>
+      <p>This console reproduces the <b>decision logic</b> of the ChattyBot / "Ask Narelle" LLM course chatbot, transcribed from its public source (<code>github.com/chinannong/ChattyBot</code>, commit <code>e4d40af</code>). The access-control checks are direct ports of the real lines &mdash; for example F-01 is <code>"ntu.edu.sg" in email[-10:]</code> from <code>Home.py</code> L168, and F-03 is the literal <code>"Ong Chin Ann" in user</code> check at L264. A companion Python harness runs the sign-in block <b>verbatim</b> (<code>Home.py</code> L104-200) under automated tests. Service outputs shown here (stack-trace text, cost figures, model replies) are illustrative stand-ins, because a browser cannot run Python, Azure or a live LLM. <b>Simulation only &mdash; not the live system; no network, no real accounts.</b></p>
+    </div>
+
+    <div class="panel">
+      <h2>How the vulnerabilities were identified</h2>
+      <div class="flowbox">
+        <svg class="flowsvg" viewBox="0 0 1180 150" role="img" aria-label="Flow: a blocked probe leaked a stack trace that led to the source repository and the findings">
+          <defs><marker id="fa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+          <g stroke="var(--muted)" stroke-width="1.5" fill="none">
+            <path d="M170 63 H200" marker-end="url(#fa)"/>
+            <path d="M372 63 H402" marker-end="url(#fa)"/>
+            <path d="M574 63 H604" marker-end="url(#fa)"/>
+            <path d="M776 63 H806" marker-end="url(#fa)"/>
+            <path d="M978 63 H1008" marker-end="url(#fa)"/>
+          </g>
+          <g>
+            <rect x="0" y="20" width="170" height="86" rx="10" fill="var(--surface-2)" stroke="var(--line)"/>
+            <rect x="202" y="20" width="170" height="86" rx="10" fill="var(--good-bg)" stroke="var(--good)" stroke-width="2"/>
+            <rect x="404" y="20" width="170" height="86" rx="10" fill="var(--crit-bg)" stroke="var(--crit)" stroke-width="2"/>
+            <rect x="606" y="20" width="170" height="86" rx="10" fill="var(--crit-bg)" stroke="var(--crit)" stroke-width="2"/>
+            <rect x="808" y="20" width="170" height="86" rx="10" fill="var(--surface-2)" stroke="var(--line)"/>
+            <rect x="1010" y="20" width="170" height="86" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+          </g>
+          <g font-size="12" fill="var(--muted)">
+            <text x="14" y="42">01</text><text x="216" y="42">02 · defence</text><text x="418" y="42">03 · fail</text>
+            <text x="620" y="42">04 · leak</text><text x="822" y="42">05</text><text x="1024" y="42">06 · result</text>
+          </g>
+          <g font-size="15" font-weight="600" fill="var(--fg)" text-anchor="middle">
+            <text x="85" y="72">Probe sent</text><text x="287" y="72">Filter blocks</text><text x="489" y="72">No handler</text>
+            <text x="691" y="72">Stack trace</text><text x="893" y="72">Find GitHub</text><text x="1095" y="72">20 findings</text>
+          </g>
+          <g font-size="12" fill="var(--muted)" text-anchor="middle">
+            <text x="85" y="92">"…BANANA"</text><text x="287" y="92">HTTP 400</text><text x="489" y="92">exception</text>
+            <text x="691" y="92">paths leaked</text><text x="893" y="92">public repo</text><text x="1095" y="92">+ auth bypass</text>
+          </g>
+        </svg>
+      </div>
+      <p style="margin-top:10px">Only steps <b style="color:var(--crit)">03 and 04</b> are application failures. Azure's filter (02) worked; the unhandled error leaked the trace, which led to the public repo and the full finding set.</p>
+    </div>
+
+    <details class="vlist">
+      <summary>20 vulnerabilities identified &mdash; 1 Critical, 4 High, 7 Medium, 6 Low, 2 Info (click to expand)</summary>
+      <div class="colwrap">
+        <table class="vtable"><tbody>
+          <tr><td class="vid">F-01</td><td>Weak email-domain check</td><td class="vsv crit">Crit</td></tr>
+          <tr><td class="vid">F-02</td><td>Any Microsoft tenant accepted</td><td class="vsv high">High</td></tr>
+          <tr><td class="vid">F-03</td><td>Admin panel unlocked by display name</td><td class="vsv high">High</td></tr>
+          <tr><td class="vid">F-04</td><td>Outdated libraries (40 CVEs)</td><td class="vsv high">High</td></tr>
+          <tr><td class="vid">F-19</td><td>Stack traces shown to users</td><td class="vsv high">High</td></tr>
+          <tr><td class="vid">F-05</td><td>Chat logs &amp; PII stored, no controls</td><td class="vsv med">Med</td></tr>
+          <tr><td class="vid">F-06</td><td>No rate limits or token caps</td><td class="vsv med">Med</td></tr>
+          <tr><td class="vid">F-07</td><td>Retrieved docs as system instructions</td><td class="vsv med">Med</td></tr>
+          <tr><td class="vid">F-08</td><td>Container runs as root</td><td class="vsv med">Med</td></tr>
+          <tr><td class="vid">F-09</td><td>Weak CI/CD pipeline</td><td class="vsv med">Med</td></tr>
+        </tbody></table>
+        <table class="vtable"><tbody>
+          <tr><td class="vid">F-10</td><td>Phishable device-code login</td><td class="vsv med">Med</td></tr>
+          <tr><td class="vid">F-20</td><td>Public repo; live app differs</td><td class="vsv med">Med</td></tr>
+          <tr><td class="vid">F-11</td><td>Unhandled login/DB errors</td><td class="vsv low">Low</td></tr>
+          <tr><td class="vid">F-12</td><td>Feedback rendered as raw HTML</td><td class="vsv low">Low</td></tr>
+          <tr><td class="vid">F-13</td><td>AI output rendered as Markdown</td><td class="vsv low">Low</td></tr>
+          <tr><td class="vid">F-14</td><td>Undefined variables on some paths</td><td class="vsv low">Low</td></tr>
+          <tr><td class="vid">F-15</td><td>Feedback saved to wrong message</td><td class="vsv low">Low</td></tr>
+          <tr><td class="vid">F-16</td><td>No .gitignore; unsigned commits</td><td class="vsv low">Low</td></tr>
+          <tr><td class="vid">F-17</td><td>Staff contacts in source</td><td class="vsv info">Info</td></tr>
+          <tr><td class="vid">F-18</td><td>Unpinned / beta packages</td><td class="vsv info">Info</td></tr>
+        </tbody></table>
+      </div>
+    </details>
+  </div>
 
   <div class="toolbar">
     <div class="counts">
