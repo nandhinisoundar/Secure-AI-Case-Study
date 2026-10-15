@@ -1,3 +1,6 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ChattyBot Test Console</title>
 <style>
   /* Layout: a security test dashboard — summary bar, filter chips, a grid of finding cards. */
@@ -140,7 +143,7 @@
           </g>
           <g font-size="15" font-weight="600" fill="var(--fg)" text-anchor="middle">
             <text x="85" y="72">Probe sent</text><text x="287" y="72">Filter blocks</text><text x="489" y="72">No handler</text>
-            <text x="691" y="72">Stack trace</text><text x="893" y="72">Find GitHub</text><text x="1095" y="72">20 findings</text>
+            <text x="691" y="72">Stack trace</text><text x="893" y="72">Find GitHub</text><text x="1095" y="72">18 findings</text>
           </g>
           <g font-size="12" fill="var(--muted)" text-anchor="middle">
             <text x="85" y="92">"…BANANA"</text><text x="287" y="92">HTTP 400</text><text x="489" y="92">exception</text>
@@ -152,14 +155,13 @@
     </div>
 
     <details class="vlist">
-      <summary>20 vulnerabilities identified &mdash; 1 Critical, 4 High, 7 Medium, 6 Low, 2 Info (click to expand)</summary>
+      <summary>18 vulnerabilities identified &mdash; 1 Critical, 4 High, 6 Medium, 5 Low, 2 Info (click to expand)</summary>
       <div class="colwrap">
         <table class="vtable"><tbody>
           <tr><td class="vid">F-01</td><td>Weak email-domain check</td><td class="vsv crit">Crit</td></tr>
           <tr><td class="vid">F-02</td><td>Any Microsoft tenant accepted</td><td class="vsv high">High</td></tr>
           <tr><td class="vid">F-03</td><td>Admin panel unlocked by display name</td><td class="vsv high">High</td></tr>
           <tr><td class="vid">F-04</td><td>Outdated libraries (40 CVEs)</td><td class="vsv high">High</td></tr>
-          <tr><td class="vid">F-19</td><td>Stack traces shown to users</td><td class="vsv high">High</td></tr>
           <tr><td class="vid">F-05</td><td>Chat logs &amp; PII stored, no controls</td><td class="vsv med">Med</td></tr>
           <tr><td class="vid">F-06</td><td>No rate limits or token caps</td><td class="vsv med">Med</td></tr>
           <tr><td class="vid">F-07</td><td>Retrieved docs as system instructions</td><td class="vsv med">Med</td></tr>
@@ -168,13 +170,12 @@
         </tbody></table>
         <table class="vtable"><tbody>
           <tr><td class="vid">F-10</td><td>Phishable device-code login</td><td class="vsv med">Med</td></tr>
-          <tr><td class="vid">F-20</td><td>Public repo; live app differs</td><td class="vsv med">Med</td></tr>
-          <tr><td class="vid">F-11</td><td>Unhandled login/DB errors</td><td class="vsv low">Low</td></tr>
+          <tr><td class="vid">F-11</td><td>Unhandled errors leak &amp; crash</td><td class="vsv high">High</td></tr>
           <tr><td class="vid">F-12</td><td>Feedback rendered as raw HTML</td><td class="vsv low">Low</td></tr>
           <tr><td class="vid">F-13</td><td>AI output rendered as Markdown</td><td class="vsv low">Low</td></tr>
           <tr><td class="vid">F-14</td><td>Undefined variables on some paths</td><td class="vsv low">Low</td></tr>
           <tr><td class="vid">F-15</td><td>Feedback saved to wrong message</td><td class="vsv low">Low</td></tr>
-          <tr><td class="vid">F-16</td><td>No .gitignore; unsigned commits</td><td class="vsv low">Low</td></tr>
+          <tr><td class="vid">F-16</td><td>Public repo exposes source; no .gitignore</td><td class="vsv low">Low</td></tr>
           <tr><td class="vid">F-17</td><td>Staff contacts in source</td><td class="vsv info">Info</td></tr>
           <tr><td class="vid">F-18</td><td>Unpinned / beta packages</td><td class="vsv info">Info</td></tr>
         </tbody></table>
@@ -186,8 +187,8 @@
     <div class="counts">
       <span class="pill crit">1 Critical</span>
       <span class="pill high">4 High</span>
-      <span class="pill med">7 Medium</span>
-      <span class="pill low">6 Low</span>
+      <span class="pill med">6 Medium</span>
+      <span class="pill low">5 Low</span>
       <span class="pill info">2 Info</span>
     </div>
     <div class="modewrap">Logic mode
@@ -199,7 +200,7 @@
   </div>
 
   <div class="filters" id="filters">
-    <button class="on" data-f="all" onclick="filt('all',this)">All (20)</button>
+    <button class="on" data-f="all" onclick="filt('all',this)">All (18)</button>
     <button data-f="auth" onclick="filt('auth',this)">Access control</button>
     <button data-f="err" onclick="filt('err',this)">Disclosure</button>
     <button data-f="ai" onclick="filt('ai',this)">AI / output</button>
@@ -283,9 +284,9 @@ var FINDINGS = [
     }
   }},
 
- {id:"F-19",sev:"high",theme:"err",title:"Stack traces shown to users",
+ {id:"F-11",sev:"high",theme:"err",title:"Unhandled errors leak & crash",
   owasp:"LLM02/LLM05 · CWE-209",
-  desc:"When the AI service rejects a request, the unhandled error prints a full stack trace in the browser.",
+  desc:"ROOT CAUSE. A blocked prompt (or a failed login) raises an unhandled error and prints a full stack trace in the browser — the leak that exposed the source.",
   body:function(k){return "<div class='desc'>Simulate a prompt the content filter blocks (HTTP 400).</div>"+runBtn("f19","Send blocked prompt")+out(k);},
   run:function(k){
     if(MODE==="fix"){
@@ -386,7 +387,7 @@ var FINDINGS = [
       setOut(k, verdict(true,"Returns ('answer', {cost}, [sources])",'ok')+why("Defaults initialised at the top of the function."));
     } else {
       setOut(k, "<div class='verdict no'>⛔ NameError</div><pre>NameError: name 'cost' is not defined\n  at Narelle.answer_this (Narelle.py:89)</pre>"+
-        bypass("Crashes, which also triggers the F-19 stack-trace leak."));
+        bypass("Crashes, which also triggers the F-11 stack-trace leak."));
     }
   }},
 
@@ -424,15 +425,10 @@ var FINDINGS = [
   desc:"Every push to main auto-deploys with no tests, scans or approval.",
   body:function(k){return "<div class='evidence'>Detection: review of main_asknarelle.yml<div class='check'>on: push: branches: [main]   → auto-deploy <span class='result-chip'>confirmed</span>\nactions/setup-python@v1   (tag, not SHA)\nno permissions: block · no test/scan step</div><b>Fix:</b> SHA-pin actions, least-privilege permissions, tests + pip-audit, branch protection.</div>";}},
 
- {id:"F-20",sev:"med",theme:"infra",title:"Public repo; live app differs",
-  owasp:"LLM07 · CWE-540",evidence:true,
-  desc:"Full source (prompts, login logic) is public; the deployed build differs from the repo.",
-  body:function(k){return "<div class='evidence'>Detection: compare live trace vs repo<div class='check'>trace: Chat.py, components/Narelle.py, Python 3.12\nrepo:  Home.py, Narelle.py, Python 3.8 <span class='result-chip'>drift</span>\nNarelle.py line 116 in repo = “# test()”, not the model call</div><b>Fix:</b> make repo private / move config to env; deploy only via the reviewed pipeline.</div>";}},
-
- {id:"F-16",sev:"low",theme:"infra",title:"No .gitignore; unsigned commits",
-  owasp:"Web A08 · CWE-540",evidence:true,
-  desc:"No ignore rules, so secrets can be committed; commits are unsigned.",
-  body:function(k){return "<div class='evidence'>Detection: list repo root<div class='check'>no .gitignore / .dockerignore <span class='result-chip'>confirmed</span>\n__pycache__ previously committed · commits unsigned\nHome.py L19: unused 'import webbrowser'</div><b>Fix:</b> add .gitignore, scan history (gitleaks), require signed commits.</div>";}},
+ {id:"F-16",sev:"low",theme:"infra",title:"Public repo exposes source; no .gitignore",
+  owasp:"LLM07/Web A08 · CWE-540",evidence:true,
+  desc:"The full source (prompts, login logic) is public and the live app differs from the repo; there are also no ignore rules and commits are unsigned.",
+  body:function(k){return "<div class='evidence'>Detection: browse the repo + compare to the live trace<div class='check'>repo public — prompts &amp; login logic readable by anyone <span class='result-chip'>confirmed</span>\ntrace: Chat.py, Narelle.py, Python 3.12  ·  repo: Home.py, Python 3.8 <span class='result-chip'>drift</span>\nno .gitignore / .dockerignore · commits unsigned · __pycache__ once committed</div><b>Fix:</b> make the repo private / move config to env, add .gitignore, scan history (gitleaks), require signed commits, deploy only via the reviewed pipeline.</div>";}},
 
  {id:"F-17",sev:"info",theme:"infra",title:"Staff contacts in source",
   owasp:"LLM07 · CWE-200",evidence:true,
@@ -444,18 +440,6 @@ var FINDINGS = [
   desc:"Unpinned packages, a beta release, and a UTF-16 requirements file.",
   body:function(k){return "<div class='evidence'>Detection: <code>file requirements.txt</code><div class='check'>UTF-16, little-endian <span class='result-chip'>confirmed</span>\npython-dotenv (no version) · pyperclip (unused)\nazure-search-documents==11.4.0b8 (beta)</div><b>Fix:</b> UTF-8, pin exact versions, drop unused, use pip-compile --generate-hashes.</div>";}},
 
- {id:"F-11",sev:"low",theme:"err",title:"Unhandled login/DB errors",
-  owasp:"Web A05 · CWE-209",
-  desc:"A failed or cancelled login prints the provider's raw error on the page.",
-  body:function(k){return "<div class='desc'>Simulate a cancelled sign-in.</div>"+runBtn("f11","Cancel sign-in")+out(k);},
-  run:function(k){
-    if(MODE==="fix"){
-      setOut(k, verdict(true,"Generic message shown",'ok')+why("Details logged server-side only.")+"<pre>Sign-in failed, please try again.</pre>");
-    } else {
-      setOut(k, "<div class='verdict no'>⛔ Provider error printed</div><pre>error: authorization_declined\nerror_description: AADSTS65004: user declined consent\ncorrelation_id: 9f1c-2a7d-...</pre>"+
-        bypass("Diagnostic detail disclosed to the user."));
-    }
-  }}
 ];
 
 /* ---------- auth logic (faithful to Home.py L162-168) ---------- */
